@@ -4,10 +4,15 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -74,11 +79,11 @@ public class UserService {
     }
 
     // //Put que elimnado logico del dato al recibir el id por pathVariable
-    // public ResponseEntity<?> eliminar(Long id, Pageable pageable) {
-    //     usuarioRepository.deleteById(id);
-    //     Page<User> usersPage = usuarioRepository.findByEstado(pageable);
-    //     return ResponseEntity.ok(usersPage);
-    // }
+    public ResponseEntity<?> eliminar(Long id, Pageable pageable) {
+        usuarioRepository.deleteById(id);
+        Page<User> usersPage = usuarioRepository.findByEstado(pageable);
+        return ResponseEntity.ok(usersPage);
+    }
     
     // //Get que devuelve usuarios que contengan el rol que se pasa como string en un pathVariable
     // public ResponseEntity<?> listarUsuariosPorRoles(String roles) {
@@ -92,6 +97,7 @@ public class UserService {
     // }
 
     // //en la ruta /api/auth/signup va a guardar nuevo usuario
+    @Transactional
     public ResponseEntity<?> registrar(@Valid User signUpRequest) {
         if(camposUnicosYnoNulos(signUpRequest).getStatusCode().is4xxClientError()){
             return camposUnicosYnoNulos(signUpRequest);
@@ -115,6 +121,11 @@ public class UserService {
         infoUserRoleRepository.save(infoUserRol);
         
         return ResponseEntity.ok(new MessageResponse("Usuario registrado satisfactoriamente!"));
+    }
+
+     public ResponseEntity<?> listarTodos(Pageable pageable) {
+        Page<User> usersPage = usuarioRepository.findByEstado(pageable);
+        return ResponseEntity.ok(usersPage);
     }
 
     //Metodo para copiar campos no nulos
