@@ -23,7 +23,7 @@ public class User {
   private String username;
 
   @NotBlank
-  @Size(max = 8)
+  @Size(max = 100)
   @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[#$%^&+=]).*$", message = "Debe contener al menos una mayúscula, un número y un carácter especial.")
   @Column(length = 100)
   private String password;

@@ -1,15 +1,13 @@
 package ec.telconet.mscomppruebamilenaorellana.services;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +16,7 @@ import ec.telconet.mscomppruebamilenaorellana.models.InfoUserRol;
 import ec.telconet.mscomppruebamilenaorellana.models.Role;
 import ec.telconet.mscomppruebamilenaorellana.models.User;
 import ec.telconet.mscomppruebamilenaorellana.payload.response.MessageResponse;
+import ec.telconet.mscomppruebamilenaorellana.repository.InfoUserRoleRepository;
 import ec.telconet.mscomppruebamilenaorellana.repository.RoleRepository;
 import ec.telconet.mscomppruebamilenaorellana.repository.UserRepository;
 
@@ -30,17 +29,19 @@ public class UserService {
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
+    private InfoUserRoleRepository infoUserRoleRepository;
+    @Autowired
     PasswordEncoder encoder;
 
-    // //Post que se encarga de verificar que no existan datos duplicados y nulos, y posterior a eso inserta el dato.
-    // public ResponseEntity<?>  insertar(User userNew) {
-    //     if(camposUnicosYnoNulos(userNew).getStatusCode().is4xxClientError()){
-    //         return camposUnicosYnoNulos(userNew);
-    //     }
-    //     userNew.setPassword(encoder.encode(userNew.getPassword()));
-    //     usuarioRepository.save(userNew);
-    //     return ResponseEntity.ok(userNew);
-    // }
+    //Post que se encarga de verificar que no existan datos duplicados y nulos, y posterior a eso inserta el dato.
+    public ResponseEntity<?>  insertar(User userNew) {
+        if(camposUnicosYnoNulos(userNew).getStatusCode().is4xxClientError()){
+            return camposUnicosYnoNulos(userNew);
+        }
+        userNew.setPassword(encoder.encode(userNew.getPassword()));
+        usuarioRepository.save(userNew);
+        return ResponseEntity.ok(userNew);
+    }
 
     //Put que se encarga de actualizar los campos de los datos, solo los que vengan en el requestBody.
     public ResponseEntity<?> actualizar(User user) {
@@ -61,12 +62,7 @@ public class UserService {
     //     return ResponseEntity.ok(usersPage);
     // }
 
-    //Get que trae todos los roles para asi guardarlo en un usuario al crear uno nuevo.
-    public ResponseEntity<?> listarAllRoles() {
-        List<Role> roles = roleRepository.findAllRoles();
-        return ResponseEntity.ok(roles);
-    }
-
+    
     //Get que trae los datos por id
     public ResponseEntity<?> listarById(Long id) {
         if (!usuarioRepository.existsById(id)) {
@@ -100,43 +96,25 @@ public class UserService {
         if(camposUnicosYnoNulos(signUpRequest).getStatusCode().is4xxClientError()){
             return camposUnicosYnoNulos(signUpRequest);
         }
-        // Obtén el rol de usuario
-        Set<Role> role = roleRepository.getRoleUser();
-        Role rol = role.iterator().next();
-        // Crea una nueva instancia de InfoUserRol y establece el usuario y el rol
-        InfoUserRol infoUserRol = new InfoUserRol();
-        infoUserRol.setUser(signUpRequest);
-        infoUserRol.setRole(rol);
-    
-        // Agrega la instancia de InfoUserRol al conjunto de roles del usuario
-        signUpRequest.getUserRoles().add(infoUserRol);
     
         signUpRequest.setStatus("A");
         signUpRequest.setPassword(encoder.encode(signUpRequest.getPassword()));
+        
+        // Guarda el usuario primero
+        User savedUser = usuarioRepository.save(signUpRequest);
     
-        usuarioRepository.save(signUpRequest);
-    
+        // Obtén el rol de usuario
+        Set<Role> role = roleRepository.getRoleUser();
+        Role rol = role.iterator().next();
+        
+        InfoUserRol infoUserRol = new InfoUserRol();
+        infoUserRol.setUser(savedUser); // Usa el usuario guardado
+        infoUserRol.setRole(rol);
+        infoUserRol.setEstado("A");
+        infoUserRol.setFecha_creacion(new Date());
+        infoUserRoleRepository.save(infoUserRol);
+        
         return ResponseEntity.ok(new MessageResponse("Usuario registrado satisfactoriamente!"));
-    }
-
-    // metodo para cambiar la clave
-    public ResponseEntity<?> editarContrasenia(Long id, Map<String, String> data) {
-        Optional<User> usuarioOptional = usuarioRepository.findById(id);
-        if (usuarioOptional.isPresent()) {
-            User usuario = usuarioOptional.get();
-            String clave = data.get("lastpassword");
-            String claveNueva = data.get("newpassword");
-            if (encoder.matches(clave, usuario.getPassword())) {
-                usuario.setPassword(encoder.encode(claveNueva));
-                usuarioRepository.save(usuario);
-                return ResponseEntity.ok(new MessageResponse("Contraseña actualizada satisfactoriamente!"));
-            } else {
-                return ResponseEntity
-                        .badRequest()
-                        .body(new MessageResponse("Error: Contraseña incorrecta!"));
-            }
-        }
-        return ResponseEntity.badRequest().body(new MessageResponse("Error: Usuario no encontrado!"));
     }
 
     //Metodo para copiar campos no nulos
@@ -151,9 +129,7 @@ public class UserService {
         if (fuente.getPassword() != null) {
             destino.setPassword(encoder.encode(fuente.getPassword()));
         }
-        // if (fuente.getRoles().size() > 0) {
-        // destino.setRoles(fuente.getRoles());
-        // }
+
         if (fuente.getStatus() != null) {
             destino.setStatus(fuente.getStatus());
         }
@@ -164,7 +140,7 @@ public class UserService {
         if (usuarioRepository.existsByUsername(user.getUsername())) {
             return ResponseEntity
             .badRequest()
-            .body(new MessageResponse("Error: Usuario utilizado anteriormente!, prueba con otro nombre de usuario."));
+            .body(new MessageResponse("Error: correo utilizado anteriormente!, prueba con otro nombre de correo."));
         }
         if (
             // user.getUsername() == null || user.getEmail() == null || 
@@ -175,6 +151,30 @@ public class UserService {
             .body(new MessageResponse("Error: Campos vacios!"));
         }
         return ResponseEntity.ok(user);
+    }
+
+    @Transactional
+    public void crearUsuarioAdmin() {
+        User user = new User();
+        user.setFirstname("ADMINISTRADOR");
+        user.setLastname("ADMIN");
+        user.setUsername("admin@admin.com");
+        user.setPassword(encoder.encode("admin@1"));
+        user.setDireccion("admin");
+        user.setTelefono("09652371263");
+        user.setFecha_creacion(new Date());
+        user.setStatus("A");
+        User savedUser = usuarioRepository.save(user);
+
+        Set<Role> role = roleRepository.getRoleAdmin();
+        Role rol = role.iterator().next();
+        
+        InfoUserRol infoUserRol = new InfoUserRol();
+        infoUserRol.setUser(savedUser);
+        infoUserRol.setRole(rol);
+        infoUserRol.setEstado("A");
+        infoUserRol.setFecha_creacion(new Date());
+        infoUserRoleRepository.save(infoUserRol);
     }
 
 }

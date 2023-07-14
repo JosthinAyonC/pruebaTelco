@@ -16,4 +16,7 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
 
     @Query("SELECT r FROM Role r WHERE r.nombre = 'ROLE_USER'")
     public Set<Role> getRoleUser();
+
+    @Query("SELECT r FROM Role r WHERE r.nombre = 'ROLE_ADMIN'")
+    public Set<Role> getRoleAdmin();
 }
