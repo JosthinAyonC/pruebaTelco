@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import ec.telconet.mscomppruebamilenaorellana.models.InfoUserRol;
 import ec.telconet.mscomppruebamilenaorellana.models.Role;
 import ec.telconet.mscomppruebamilenaorellana.models.User;
 import ec.telconet.mscomppruebamilenaorellana.payload.response.MessageResponse;
@@ -31,15 +32,15 @@ public class UserService {
     @Autowired
     PasswordEncoder encoder;
 
-    //Post que se encarga de verificar que no existan datos duplicados y nulos, y posterior a eso inserta el dato.
-    public ResponseEntity<?>  insertar(User userNew) {
-        if(camposUnicosYnoNulos(userNew).getStatusCode().is4xxClientError()){
-            return camposUnicosYnoNulos(userNew);
-        }
-        userNew.setPassword(encoder.encode(userNew.getPassword()));
-        usuarioRepository.save(userNew);
-        return ResponseEntity.ok(userNew);
-    }
+    // //Post que se encarga de verificar que no existan datos duplicados y nulos, y posterior a eso inserta el dato.
+    // public ResponseEntity<?>  insertar(User userNew) {
+    //     if(camposUnicosYnoNulos(userNew).getStatusCode().is4xxClientError()){
+    //         return camposUnicosYnoNulos(userNew);
+    //     }
+    //     userNew.setPassword(encoder.encode(userNew.getPassword()));
+    //     usuarioRepository.save(userNew);
+    //     return ResponseEntity.ok(userNew);
+    // }
 
     //Put que se encarga de actualizar los campos de los datos, solo los que vengan en el requestBody.
     public ResponseEntity<?> actualizar(User user) {
@@ -54,11 +55,11 @@ public class UserService {
         return ResponseEntity.ok(usuarioRepository.save(usuarioEditado));
     }
 
-    //Get que trae los datos paginagos
-    public ResponseEntity<?> listarTodos(Pageable pageable) {
-        Page<User> usersPage = usuarioRepository.findByEstado(pageable);
-        return ResponseEntity.ok(usersPage);
-    }
+    // //Get que trae los datos paginagos
+    // public ResponseEntity<?> listarTodos(Pageable pageable) {
+    //     Page<User> usersPage = usuarioRepository.findByEstado(pageable);
+    //     return ResponseEntity.ok(usersPage);
+    // }
 
     //Get que trae todos los roles para asi guardarlo en un usuario al crear uno nuevo.
     public ResponseEntity<?> listarAllRoles() {
@@ -76,37 +77,45 @@ public class UserService {
         return ResponseEntity.ok(usuarioRepository.findById(id).get());
     }
 
-    //Put que elimnado logico del dato al recibir el id por pathVariable
-    public ResponseEntity<?> eliminar(Long id, Pageable pageable) {
-        usuarioRepository.deleteById(id);
-        Page<User> usersPage = usuarioRepository.findByEstado(pageable);
-        return ResponseEntity.ok(usersPage);
-    }
+    // //Put que elimnado logico del dato al recibir el id por pathVariable
+    // public ResponseEntity<?> eliminar(Long id, Pageable pageable) {
+    //     usuarioRepository.deleteById(id);
+    //     Page<User> usersPage = usuarioRepository.findByEstado(pageable);
+    //     return ResponseEntity.ok(usersPage);
+    // }
     
-    //Get que devuelve usuarios que contengan el rol que se pasa como string en un pathVariable
-    public ResponseEntity<?> listarUsuariosPorRoles(String roles) {
-        List<User> usuarios = usuarioRepository.findByRoles(roles);
-        if (usuarios.isEmpty()) {
-            return ResponseEntity
-            .badRequest()
-            .body(new MessageResponse("Error: No se encontraron usuarios con el rol: " + roles));
-        }
-        return ResponseEntity.ok(usuarios);
-    }
+    // //Get que devuelve usuarios que contengan el rol que se pasa como string en un pathVariable
+    // public ResponseEntity<?> listarUsuariosPorRoles(String roles) {
+    //     List<User> usuarios = usuarioRepository.findByRoles(roles);
+    //     if (usuarios.isEmpty()) {
+    //         return ResponseEntity
+    //         .badRequest()
+    //         .body(new MessageResponse("Error: No se encontraron usuarios con el rol: " + roles));
+    //     }
+    //     return ResponseEntity.ok(usuarios);
+    // }
 
-    //en la ruta /api/auth/signup va a guardar nuevo usuario
+    // //en la ruta /api/auth/signup va a guardar nuevo usuario
     public ResponseEntity<?> registrar(@Valid User signUpRequest) {
-            
         if(camposUnicosYnoNulos(signUpRequest).getStatusCode().is4xxClientError()){
             return camposUnicosYnoNulos(signUpRequest);
         }
-        Set<Role> strRoles = roleRepository.getRoleUser();
-        // signUpRequest.setRoles(strRoles);
+        // Obtén el rol de usuario
+        Set<Role> role = roleRepository.getRoleUser();
+        Role rol = role.iterator().next();
+        // Crea una nueva instancia de InfoUserRol y establece el usuario y el rol
+        InfoUserRol infoUserRol = new InfoUserRol();
+        infoUserRol.setUser(signUpRequest);
+        infoUserRol.setRole(rol);
+    
+        // Agrega la instancia de InfoUserRol al conjunto de roles del usuario
+        signUpRequest.getUserRoles().add(infoUserRol);
+    
         signUpRequest.setStatus("A");
         signUpRequest.setPassword(encoder.encode(signUpRequest.getPassword()));
-        
+    
         usuarioRepository.save(signUpRequest);
-        
+    
         return ResponseEntity.ok(new MessageResponse("Usuario registrado satisfactoriamente!"));
     }
 
@@ -150,7 +159,7 @@ public class UserService {
         }
     }
 
-    //Metodo para verificar email, usuario existente y campos vacios
+    // Metodo para verificar email, usuario existente y campos vacios
     private ResponseEntity<?> camposUnicosYnoNulos(User user) {
         if (usuarioRepository.existsByUsername(user.getUsername())) {
             return ResponseEntity

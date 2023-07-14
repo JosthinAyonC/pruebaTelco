@@ -18,15 +18,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Boolean existsByUsername(String username);
 
-  Boolean existsByEmail(String email);
+  // Boolean existsByEmail(String email);
 
-  @Modifying
-  @Query("UPDATE User u SET u.status = null WHERE u.id = ?1")
-  public void deleteById(Long id);
+  // @Modifying
+  // @Query("UPDATE User u SET u.status = null WHERE u.id = ?1")
+  // public void deleteById(Long id);
 
-  @Query("SELECT u FROM User u WHERE u.status != null ORDER BY u.id DESC")
-  Page<User> findByEstado(Pageable pageable);
+  // @Query("SELECT u FROM User u WHERE u.status != null ORDER BY u.id DESC")
+  // Page<User> findByEstado(Pageable pageable);
 
-  @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
-    List<User> findByRoles(@Param("roleName") String roleName);
+  // @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
+  //   List<User> findByRoles(@Param("roleName") String roleName);
 }

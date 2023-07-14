@@ -14,6 +14,6 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     @Query("SELECT r FROM Role r ORDER BY r.id ASC")
     public List<Role> findAllRoles();
 
-    @Query("SELECT r FROM Role r WHERE r.name = 'ROLE_USER'")
+    @Query("SELECT r FROM Role r WHERE r.nombre = 'ROLE_USER'")
     public Set<Role> getRoleUser();
 }
