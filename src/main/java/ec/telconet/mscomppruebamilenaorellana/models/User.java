@@ -6,6 +6,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -67,6 +69,7 @@ public class User {
   private String status;
 
   @OneToMany(mappedBy = "user")
+  @JsonIgnoreProperties({"user"})
   private Set<InfoUserRol> userRoles = new HashSet<>();
 
   public User(Long id, String username, String password, String firstname, String lastname, String direccion,

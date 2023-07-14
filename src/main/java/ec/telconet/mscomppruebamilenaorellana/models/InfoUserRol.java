@@ -12,6 +12,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name = "info_user_rol")
 public class InfoUserRol {
@@ -24,6 +27,7 @@ public class InfoUserRol {
   private User user;
 
   @ManyToOne
+  @JsonIgnoreProperties({"user"})
   @JoinColumn(name = "id_role")
   private Role role;
 

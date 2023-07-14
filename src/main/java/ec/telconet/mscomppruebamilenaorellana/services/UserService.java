@@ -4,9 +4,6 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
-import java.util.List;
-import java.util.Map;
-
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
@@ -97,7 +94,6 @@ public class UserService {
     // }
 
     // //en la ruta /api/auth/signup va a guardar nuevo usuario
-    @Transactional
     public ResponseEntity<?> registrar(@Valid User signUpRequest) {
         if(camposUnicosYnoNulos(signUpRequest).getStatusCode().is4xxClientError()){
             return camposUnicosYnoNulos(signUpRequest);
@@ -124,7 +120,7 @@ public class UserService {
     }
 
      public ResponseEntity<?> listarTodos(Pageable pageable) {
-        Page<User> usersPage = usuarioRepository.findByEstado(pageable);
+        Page<User> usersPage = usuarioRepository.findAll(pageable);
         return ResponseEntity.ok(usersPage);
     }
 
@@ -164,7 +160,6 @@ public class UserService {
         return ResponseEntity.ok(user);
     }
 
-    @Transactional
     public void crearUsuarioAdmin() {
         User user = new User();
         user.setFirstname("ADMINISTRADOR");

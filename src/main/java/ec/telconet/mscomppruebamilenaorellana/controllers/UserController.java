@@ -1,24 +1,12 @@
 package ec.telconet.mscomppruebamilenaorellana.controllers;
 
-import java.util.Map;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+
 
 import ec.telconet.mscomppruebamilenaorellana.models.User;
 import ec.telconet.mscomppruebamilenaorellana.services.UserService;
@@ -40,7 +30,7 @@ public class UserController {
     // PreAutorize le da los permisos para poder realizar las peticiones, por ej si
     // es "ROLE_ADMIN" las personas con dicho rol, pueden hacer peticiones
     @GetMapping
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> listar(@PageableDefault(page = 0, size = 8) Pageable pageable) {
         return usuarioService.listarTodos(pageable);
     }
