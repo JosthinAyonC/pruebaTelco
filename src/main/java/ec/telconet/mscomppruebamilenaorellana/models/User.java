@@ -1,6 +1,11 @@
 package ec.telconet.mscomppruebamilenaorellana.models;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,21 +17,34 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Email
+  @NotBlank
   @Column(length = 50)
   private String username;
 
+  @NotBlank
+  @Size(max = 8)
+  @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[#$%^&+=]).*$", message = "Debe contener al menos una mayúscula, un número y un carácter especial.")
   @Column(length = 100)
   private String password;
 
+  @NotBlank
+  @Pattern(regexp = "^[A-Z]*$", message = "Solo puede contener letras mayúsculas.")
   @Column(length = 50)
   private String firstname;
 
+  @NotBlank
+  @Pattern(regexp = "^[A-Z]*$", message = "Solo puede contener letras mayúsculas.")
   @Column(length = 50)
   private String lastname;
 
+  @NotBlank
+  @Pattern(regexp = "^[a-z]*$", message = "Solo puede contener letras minúsculas.")
   @Column(length = 100)
   private String direccion;
 
+  @NotBlank
+  @Pattern(regexp = "^\\d*$", message = "Solo puede contener números.")
   @Column(length = 20)
   private String telefono;
 
