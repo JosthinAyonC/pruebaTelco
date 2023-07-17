@@ -31,11 +31,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
   //       @Param("i_offset") Integer offset,
   //       @Param("i_limit") Integer limit
   //   );
-
-
-  @Query("SELECT u FROM User u ORDER BY u.id DESC")
-  Page<User> findByEstado(Pageable pageable);
-
-  // @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
-  //   List<User> findByRoles(@Param("roleName") String roleName);
 }

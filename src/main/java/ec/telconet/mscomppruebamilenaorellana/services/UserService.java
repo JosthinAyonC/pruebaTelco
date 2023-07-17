@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,16 +32,37 @@ public class UserService {
     @Autowired
     private InfoUserRoleRepository infoUserRoleRepository;
     @Autowired
-    PasswordEncoder encoder;
-
+    private PasswordEncoder encoder;
+    
     //Post que se encarga de verificar que no existan datos duplicados y nulos, y posterior a eso inserta el dato.
     public ResponseEntity<?>  insertar(User userNew) {
         if(camposUnicosYnoNulos(userNew).getStatusCode().is4xxClientError()){
             return camposUnicosYnoNulos(userNew);
         }
         userNew.setPassword(encoder.encode(userNew.getPassword()));
-        usuarioRepository.save(userNew);
+        userNew.setFecha_creacion(new Date());
+        User savedUser = usuarioRepository.save(userNew);
+        
+        establecerRelacionUser(savedUser, "user");
         return ResponseEntity.ok(userNew);
+    }
+
+    public ResponseEntity<?> establecerRelacionUser(User user, String roleType){
+        Set<Role> role;
+        if(roleType.equals("user")){
+             role = roleRepository.getRoleUser();
+        }else{
+            role = roleRepository.getRoleAdmin();
+        }
+        Role rol = role.iterator().next();
+        InfoUserRol infoUserRol = new InfoUserRol();
+        
+        infoUserRol.setUser(user); // Usa el usuario guardado
+        infoUserRol.setRole(rol);
+        infoUserRol.setEstado("A");
+        infoUserRol.setFecha_creacion(new Date());
+        infoUserRoleRepository.save(infoUserRol);
+        return ResponseEntity.ok(infoUserRol);
     }
 
     //Put que se encarga de actualizar los campos de los datos, solo los que vengan en el requestBody.
@@ -50,20 +70,13 @@ public class UserService {
         Optional<User> optionalUsuario = usuarioRepository.findById(user.getId());
         if (optionalUsuario.isEmpty()) {
           return ResponseEntity
-            .badRequest()
+          .badRequest()
             .body(new MessageResponse("Error: El usuario no ha sido encontrado"));
         }
         User usuarioEditado = optionalUsuario.get();
         copiarCamposNoNulos(user, usuarioEditado);
         return ResponseEntity.ok(usuarioRepository.save(usuarioEditado));
     }
-
-    // //Get que trae los datos paginagos
-    // public ResponseEntity<?> listarTodos(Pageable pageable) {
-    //     Page<User> usersPage = usuarioRepository.findByEstado(pageable);
-    //     return ResponseEntity.ok(usersPage);
-    // }
-
     
     //Get que trae los datos por id
     public ResponseEntity<?> listarById(Long id) {
@@ -78,44 +91,23 @@ public class UserService {
     // //Put que elimnado logico del dato al recibir el id por pathVariable
     public ResponseEntity<?> eliminar(Long id, Pageable pageable) {
         usuarioRepository.deleteById(id);
-        Page<User> usersPage = usuarioRepository.findByEstado(pageable);
+        Page<User> usersPage = usuarioRepository.findAll(pageable);
         return ResponseEntity.ok(usersPage);
     }
     
-    // //Get que devuelve usuarios que contengan el rol que se pasa como string en un pathVariable
-    // public ResponseEntity<?> listarUsuariosPorRoles(String roles) {
-    //     List<User> usuarios = usuarioRepository.findByRoles(roles);
-    //     if (usuarios.isEmpty()) {
-    //         return ResponseEntity
-    //         .badRequest()
-    //         .body(new MessageResponse("Error: No se encontraron usuarios con el rol: " + roles));
-    //     }
-    //     return ResponseEntity.ok(usuarios);
-    // }
-
     // //en la ruta /api/auth/signup va a guardar nuevo usuario
     public ResponseEntity<?> registrar(@Valid User signUpRequest) {
         if(camposUnicosYnoNulos(signUpRequest).getStatusCode().is4xxClientError()){
             return camposUnicosYnoNulos(signUpRequest);
         }
-    
+        signUpRequest.setFecha_creacion(new Date());
         signUpRequest.setStatus("A");
         signUpRequest.setPassword(encoder.encode(signUpRequest.getPassword()));
         
         // Guarda el usuario primero
         User savedUser = usuarioRepository.save(signUpRequest);
     
-        // Obtén el rol de usuario
-        Set<Role> role = roleRepository.getRoleUser();
-        Role rol = role.iterator().next();
-        
-        InfoUserRol infoUserRol = new InfoUserRol();
-        infoUserRol.setUser(savedUser); // Usa el usuario guardado
-        infoUserRol.setRole(rol);
-        infoUserRol.setEstado("A");
-        infoUserRol.setFecha_creacion(new Date());
-        infoUserRoleRepository.save(infoUserRol);
-        
+        establecerRelacionUser(savedUser, "user");
         return ResponseEntity.ok(new MessageResponse("Usuario registrado satisfactoriamente!"));
     }
 
@@ -132,11 +124,9 @@ public class UserService {
         if (fuente.getLastname() != null) {
             destino.setLastname(fuente.getLastname());
         }
-        
         if (fuente.getPassword() != null) {
             destino.setPassword(encoder.encode(fuente.getPassword()));
         }
-
         if (fuente.getStatus() != null) {
             destino.setStatus(fuente.getStatus());
         }
@@ -172,15 +162,7 @@ public class UserService {
         user.setStatus("A");
         User savedUser = usuarioRepository.save(user);
 
-        Set<Role> role = roleRepository.getRoleAdmin();
-        Role rol = role.iterator().next();
-        
-        InfoUserRol infoUserRol = new InfoUserRol();
-        infoUserRol.setUser(savedUser);
-        infoUserRol.setRole(rol);
-        infoUserRol.setEstado("A");
-        infoUserRol.setFecha_creacion(new Date());
-        infoUserRoleRepository.save(infoUserRol);
+        establecerRelacionUser(savedUser, "admin");
     }
 
 }

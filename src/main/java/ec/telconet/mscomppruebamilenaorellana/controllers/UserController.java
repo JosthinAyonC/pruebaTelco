@@ -1,6 +1,8 @@
 package ec.telconet.mscomppruebamilenaorellana.controllers;
 
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -41,12 +43,14 @@ public class UserController {
         return usuarioService.listarById(id);
     }
     
+    @Transactional
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> insertar(@RequestBody User usuarioBody) {
         return usuarioService.insertar(usuarioBody);
     }
     
+    @Transactional
     @PutMapping("/editar/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody User usuarioBody) {
@@ -54,8 +58,9 @@ public class UserController {
         return usuarioService.actualizar(usuarioBody);
     }
     
+    @Transactional
     @DeleteMapping("/eliminar/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> eliminar(@PathVariable Long id, @PageableDefault(page = 0, size = 8) Pageable pageable) {
         return usuarioService.eliminar(id, pageable);
     }

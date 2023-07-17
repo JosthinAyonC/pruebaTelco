@@ -17,7 +17,7 @@ import ec.telconet.mscomppruebamilenaorellana.models.Role;
 import ec.telconet.mscomppruebamilenaorellana.services.RoleService;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/role")
 @CrossOrigin(origins = "*")
 public class RoleController {
 
