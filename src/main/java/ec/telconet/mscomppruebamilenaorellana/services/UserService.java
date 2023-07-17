@@ -75,6 +75,7 @@ public class UserService {
         }
         User usuarioEditado = optionalUsuario.get();
         copiarCamposNoNulos(user, usuarioEditado);
+        usuarioEditado.setFecha_modificacion(new Date());
         return ResponseEntity.ok(usuarioRepository.save(usuarioEditado));
     }
     
@@ -129,6 +130,12 @@ public class UserService {
         }
         if (fuente.getStatus() != null) {
             destino.setStatus(fuente.getStatus());
+        }
+        if (fuente.getTelefono() != null) {
+            destino.setTelefono(fuente.getTelefono());
+        }
+        if (fuente.getFoto() != null) {
+            destino.setFoto(fuente.getFoto());
         }
     }
 

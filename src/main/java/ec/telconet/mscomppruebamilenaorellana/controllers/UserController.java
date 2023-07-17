@@ -32,7 +32,7 @@ public class UserController {
     // PreAutorize le da los permisos para poder realizar las peticiones, por ej si
     // es "ROLE_ADMIN" las personas con dicho rol, pueden hacer peticiones
     @GetMapping
-    // @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> listar(@PageableDefault(page = 0, size = 8) Pageable pageable) {
         return usuarioService.listarTodos(pageable);
     }
@@ -45,7 +45,7 @@ public class UserController {
     
     @Transactional
     @PostMapping
-    // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> insertar(@RequestBody User usuarioBody) {
         return usuarioService.insertar(usuarioBody);
     }
@@ -60,7 +60,7 @@ public class UserController {
     
     @Transactional
     @DeleteMapping("/eliminar/{id}")
-    // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> eliminar(@PathVariable Long id, @PageableDefault(page = 0, size = 8) Pageable pageable) {
         return usuarioService.eliminar(id, pageable);
     }
